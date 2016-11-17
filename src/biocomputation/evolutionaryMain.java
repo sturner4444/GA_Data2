@@ -30,21 +30,23 @@ public class evolutionaryMain {
         int geneLength = 35;
         int populationSize = 100;
         int bestGen = 0;
-        float muteRate = (float) 0.02;
-        float xoverRate = (float) 0.9;
+        float muteRate = (float) 0.001;
+        float xoverRate = (float) 0.1;
 
         Population p = new Population(populationSize, geneLength);
         Individual best = new Individual(geneLength);
         PrintWriter bestText = new PrintWriter("best.txt", "utf-8");
         PrintWriter meanText = new PrintWriter("mean.txt", "utf-8");
+        Validation validation = new Validation();
 //------------------------------------------------------------------------------------------------------------------------------------------------------\\
 
         //randomly create new population
         p.populateData();
         p.initialise();
+        p.populationFitnessEval();
 
         //keep the best of the previous generation.
-        while (best.getFitness() < 41) {
+        while (genCount < generations) {
 
             if (genCount > 0) {
                 p.getPopulation().get(p.getR().nextInt(populationSize));
@@ -60,6 +62,8 @@ public class evolutionaryMain {
                 p.crossOver(p.getOffspring().get(i), p.getOffspring().get(p.getMaxPop() - 1 - i), xoverRate);
 
             }
+
+            p.crossedFitnessEval();
 
             //a chance for mutation on each bit of each individual.
             for (int i = 0; i < p.getCrossed().size(); i++) {
@@ -114,7 +118,7 @@ public class evolutionaryMain {
 
             System.out.println("Mean: " + fitMean);
 
-        }
+        }//WHILE GENERATIONS
 
         bestText.close();
         meanText.close();
@@ -124,7 +128,7 @@ public class evolutionaryMain {
         Set<Rule> bestSet = new HashSet<>(best.getRules());
         Set<Rule> zero = bestSet.stream().filter(rule -> rule.getOutput() == 0).collect(Collectors.toSet());
         Set<Rule> one = bestSet.stream().filter(rule -> rule.getOutput() == 1).collect(Collectors.toSet());
-        
+
         //get the model rules into an indvidual
         Individual modelIndividual = new Individual(geneLength);
         modelIndividual.getRules().addAll(one);
@@ -138,62 +142,10 @@ public class evolutionaryMain {
         zero.forEach(rule -> {
             System.out.println(Arrays.toString(rule.getCondition()) + Integer.toString(rule.getOutput()) + "\n");
         });
+        int correctValidations = validation.validate(best);
 
+        System.out.println("Correctly Validated unseen data: " + correctValidations);
 //-------------classification--------------This should be delt with by class....----------------------------------------------------------------------------------------------
-        String sc;
-        BufferedReader br = new BufferedReader(new FileReader("dataToClassify"));
-        ArrayList<Classification> newData = new ArrayList();
-        ArrayList<Rule> classificationRules = new ArrayList();
-        //parse data to be calsified and get it into arrays
-        while ((sc = br.readLine()) != null) {
-
-            String[] split = sc.split(" ");
-
-            int[] ruleEnconding = new int[6];
-            int out = 0;
-
-            for (int i = 0; i < 6; i++) {
-
-                ruleEnconding[i] = Character.getNumericValue(split[0].charAt(i));
-            }
-
-            Classification temp = new Classification(ruleEnconding);
-            newData.add(temp);
-            //  System.out.println("READ DATA SIZE: " + dataList.size());
-        }
         //check the GA hasnt failed to create the model
-        if (one.size() > 1) {
-
-            //each data to be classified
-            for (Classification newData1 : newData) {
-                //each rule in the model
-                for (Rule rule : modelIndividual.getRules()) {
-
-                    int matches = 0;
-                    //each bit in data and model rule
-                    for (int i = 0; i < rule.getCondition().length; i++) {
-                        if (newData1.getVariable()[i] == rule.getCondition()[i] || rule.getCondition()[i] == 2) {
-                            matches++;
-                        } else {
-                            break;
-                        }
-                        if (matches == 6) {
-                            //all data initlialsed with 0 set to 1 if model dictates
-                            newData1.setOutput(1);
-                            break;
-
-                        }
-
-                    }
-
-                }
-
-            }
-        }
-
-        if (modelIndividual.getRules().size() == 4) {
-
-            System.out.println("adaw");
-        };
     }
 }

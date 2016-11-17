@@ -136,7 +136,7 @@ public class Population {
 
             for (int i = 0; i < chromeLen; i++) {
 
-                int temp = 0;
+                int temp;
                 //copy values up to crossover point
 
                 if (i < crossPoint) {
@@ -156,10 +156,6 @@ public class Population {
             }
             crossed.add(newIndividualOne);
             crossed.add(newIndividualTwo);
-            newIndividualOne.creatRules();
-            newIndividualTwo.creatRules();
-            newIndividualOne.evaluateFitness(dataList);
-            newIndividualTwo.evaluateFitness(dataList);
 
         } else {
 
@@ -171,16 +167,9 @@ public class Population {
                 newIndividualTwo.getGenes()[i] = temp;
 
             }
-
             crossed.add(newIndividualOne);
             crossed.add(newIndividualTwo);
-            newIndividualOne.evaluateFitness(dataList);
-            newIndividualTwo.evaluateFitness(dataList);
-
         }
-        //probably not the best place for this but it works, this is the call to the function where the genes are split and placed into new array in fomat of XXXXX Y
-        newIndividualOne.creatRules();
-        newIndividualTwo.creatRules();
 
     }
 
@@ -237,6 +226,30 @@ public class Population {
                 }
             }
 
+        }
+    }
+
+    public void populationFitnessEval() {
+
+        for (Individual ind : this.population) {
+            ind.creatRules();
+            ind.evaluateFitness(dataList);
+        }
+    }
+
+    public void crossedFitnessEval() {
+
+        for (Individual ind : this.crossed) {
+            ind.creatRules();
+            ind.evaluateFitness(dataList);
+        }
+    }
+
+    public void offspringFitnessEval() {
+
+        for (Individual ind : this.offspring) {
+            ind.creatRules();
+            ind.evaluateFitness(dataList);
         }
     }
 
